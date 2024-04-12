@@ -375,6 +375,9 @@ def delete_fitness_goal(conn, goal_id):
         cur.close()
 
 
+#Schedule Managment Goes here
+
+
 def admin_registration(conn):
     print("Register New Staff")
     name = input("Name: ")
@@ -522,6 +525,97 @@ def view_bookings_by_date(conn, date):
         bookings = cur.fetchall()
         for booking in bookings:
             print(f"BookingID: {booking[0]}, RoomID: {booking[1]}, ...")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        cur.close()
+
+def add_fitness_equipment(conn, equipment_name, status, last_maintenance_date, warranty_date):
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO Equipment (EquipmentName, Status, LastMaintenanceDate, WarrantyDate)
+            VALUES (%s, %s, %s, %s);
+            """, (equipment_name, status, last_maintenance_date, warranty_date))
+        conn.commit()
+        print("Equipment added successfully.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+
+
+def delete_fitness_equipment(conn, equipment_id):
+    try:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM Equipment WHERE EquipmentID = %s;", (equipment_id,))
+        conn.commit()
+        if cur.rowcount:
+            print("Equipment deleted successfully.")
+        else:
+            print("No equipment found with that ID.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+
+
+def update_fitness_equipment_status(conn, equipment_id, new_status):
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE Equipment
+            SET Status = %s
+            WHERE EquipmentID = %s;
+            """, (new_status, equipment_id))
+        conn.commit()
+        if cur.rowcount:
+            print("Equipment status updated successfully.")
+        else:
+            print("No equipment found with that ID.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+
+
+def update_equipment_maintenance_date(conn, equipment_id, new_maintenance_date):
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE Equipment
+            SET LastMaintenanceDate = %s
+            WHERE EquipmentID = %s;
+            """, (new_maintenance_date, equipment_id))
+        conn.commit()
+        if cur.rowcount:
+            print("Maintenance date updated successfully.")
+        else:
+            print("No equipment found with that ID.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+
+def monitor_fitness_equipment_maintenance(conn):
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT EquipmentID, EquipmentName, LastMaintenanceDate, WarrantyDate, Status
+            FROM Equipment
+            WHERE Status = 'Needs Maintenance' OR LastMaintenanceDate <= CURRENT_DATE - INTERVAL '6 months';
+            """)
+        results = cur.fetchall()
+        if results:
+            print("Equipment needing maintenance:")
+            for item in results:
+                print(f"ID: {item[0]}, Name: {item[1]}, Last Maintained: {item[2].strftime('%Y-%m-%d')}, Status: {item[4]}")
+        else:
+            print("No equipment requires maintenance at the moment.")
     except Exception as e:
         print(f"An error occurred: {e}")
     finally:
