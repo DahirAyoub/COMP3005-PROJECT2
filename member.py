@@ -326,3 +326,123 @@ def delete_fitness_goal(conn, goal_id):
         conn.rollback()
     finally:
         cur.close()
+
+
+def book_session(conn, member_id, trainer_id, session_type, start_time, end_time):
+    try:
+        cur = conn.cursor()
+        # First, list all available rooms that do not have overlapping bookings
+        cur.execute("""
+            SELECT r.RoomID, r.RoomName FROM Room r
+            WHERE NOT EXISTS (
+                SELECT 1 FROM Schedule s
+                WHERE s.RoomID = r.RoomID AND NOT (%s >= s.EndTime OR %s <= s.StartTime)
+            );
+            """, (end_time, start_time))
+        
+        available_rooms = cur.fetchall()
+        if not available_rooms:
+            print("No available rooms for the selected time slot.")
+            return
+        
+        print("Available Rooms:")
+        for room in available_rooms:
+            print(f"RoomID: {room[0]}, Name: {room[1]}")
+
+        # Let the user choose a room from the list
+        room_id = int(input("Enter Room ID to book: "))
+
+        # Check if the room is still available (to handle potential concurrency issues)
+        cur.execute("""
+            SELECT 1 FROM Schedule WHERE RoomID = %s AND NOT (%s >= EndTime OR %s <= StartTime);
+            """, (room_id, end_time, start_time))
+        if cur.fetchone():
+            print("This room is no longer available. Please choose a different room.")
+            return
+
+        # Set price based on the session type
+        price = 75 if session_type.lower() == 'personal' else 25
+
+        # Insert new session
+        cur.execute("""
+            INSERT INTO Schedule (TrainerID, MemberID, RoomID, SessionType, StartTime, EndTime, Price)
+            VALUES (%s, %s, %s, %s, %s, %s, %s);
+            """, (trainer_id, member_id, room_id, session_type, start_time, end_time, price))
+        conn.commit()
+        print("Session booked successfully.")
+    except DatabaseError as e:
+        print(f"An error occurred: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+
+
+def view_member_sessions(conn, member_id):
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT SessionID, SessionType, StartTime, EndTime, Status
+            FROM Schedule
+            WHERE MemberID = %s;
+            """, (member_id,))
+        sessions = cur.fetchall()
+        if sessions:
+            print("Your sessions:")
+            for session in sessions:
+                print(f"SessionID: {session[0]}, Type: {session[1]}, Start: {session[2]}, End: {session[3]}, Status: {session[4]}")
+        else:
+            print("You have no booked sessions.")
+    except DatabaseError as e:
+        print(f"An error occurred: {e}")
+    finally:
+        cur.close()
+
+
+def cancel_session(conn, session_id):
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE Schedule SET Status = 'Cancelled' WHERE SessionID = %s;
+            """, (session_id,))
+        conn.commit()
+        if cur.rowcount:
+            print("Session cancelled successfully.")
+        else:
+            print("Session not found.")
+    except DatabaseError as e:
+        print(f"An error occurred: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+
+
+
+def reschedule_session(conn, session_id, new_start_time, new_end_time):
+    try:
+        cur = conn.cursor()
+        # Check for availability in the new time slot
+        cur.execute("""
+            SELECT RoomID FROM Schedule WHERE SessionID = %s;
+            """, (session_id,))
+        room_id = cur.fetchone()[0]
+        cur.execute("""
+            SELECT 1 FROM Schedule WHERE RoomID = %s AND NOT (%s >= EndTime OR %s <= StartTime) AND SessionID != %s;
+            """, (room_id, new_end_time, new_start_time, session_id))
+        if cur.fetchone():
+            print("New time slot conflicts with another session. Please choose a different time.")
+            return
+
+        # Update session timing
+        cur.execute("""
+            UPDATE Schedule SET StartTime = %s, EndTime = %s WHERE SessionID = %s;
+            """, (new_start_time, new_end_time, session_id))
+        conn.commit()
+        if cur.rowcount:
+            print("Session rescheduled successfully.")
+        else:
+            print("Session not found.")
+    except DatabaseError as e:
+        print(f"An error occurred: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
