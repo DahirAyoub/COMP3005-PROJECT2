@@ -167,10 +167,9 @@ if __name__ == "__main__":
             print("\nWelcome to the Health and Fitness Club Management System")
             print("1: Register as a new Member")
             print("2: Register as a new Trainer")
-            print("3: Register as a new Admin")
-            print("4: Login as a Memeber")
-            print("5: Login as a Trainer")
-            print("6: Login as a Admin")
+            print("3: Login as a Memeber")
+            print("4: Login as a Trainer")
+            print("5: Login as a Admin")
             print("0: Exit")
             user_choice = input("Choose an option to proceed: ")
 
@@ -180,10 +179,7 @@ if __name__ == "__main__":
             elif user_choice=='2':
                 print("Trainer Registration goes here")
             
-            elif user_choice=='3':
-                admin_registration(conn)
-            
-            elif user_choice == '4':
+            elif user_choice == '3':
                 member_id = authenticate_user(conn)
                 if member_id:
                     print(f"Login successful! Welcome, Member ID: {member_id}")
@@ -192,15 +188,15 @@ if __name__ == "__main__":
                 else:
                     print("Login failed. Invalid email or password. Please try again.")
 
-            elif user_choice=='5':
+            elif user_choice=='4':
                 print("Trainer Login goes here")
             
-            elif user_choice=='6':
+            elif user_choice=='5':
                 admin_id = authenticate_admin(conn)
                 if admin_id:
                     print(f"Login successful! Welcome, Admin ID: {admin_id}")
                     while True:
-                        admin_choice()
+                        admin_choices(conn,admin_id)
                 else:
                     print("Login failed. Invalid email or password. Please try again.")
 

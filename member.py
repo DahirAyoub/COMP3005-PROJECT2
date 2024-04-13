@@ -36,9 +36,8 @@ def authenticate_user(conn):
         if user:
             stored_password = user[1]
             # Check if the stored password is hashed (by checking if it follows a typical hash pattern)
-            if stored_password.startswith('pbkdf2:sha256:') or stored_password.startswith('$2b$'):
-                if check_password_hash(stored_password, password):
-                    return user[0]  # Password match for hashed password
+            if check_password_hash(stored_password, password):
+                return user[0]
             else:
                 # Assume plaintext comparison
                 if stored_password == password:
