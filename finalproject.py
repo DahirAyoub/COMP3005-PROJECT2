@@ -5,9 +5,9 @@ from trainer import *
 
 # Function to retrieve database connection credentials
 def get_db_credentials():
-    dbname = input("Enter database name (default 'default_db_name'): ") or 'default_db_name'
-    user = input("Enter username (default 'default_user'): ") or 'default_user'
-    password = input("Enter password: ")
+    dbname = input("Enter database name (default 'FinalProject'): ") or 'FinalProject'
+    user = input("Enter username (default 'postgres'): ") or 'postgres'
+    password = input("Enter password (default 'postgres'): ") or 'postgres'
     host = input("Enter host (default 'localhost'): ") or 'localhost'
     port = input("Enter port (default '5432'): ") or '5432'
     return {
