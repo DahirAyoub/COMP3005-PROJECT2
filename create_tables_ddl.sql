@@ -33,9 +33,13 @@ CREATE TABLE HealthMetrics (
 CREATE TABLE Trainers (
     TrainerID SERIAL PRIMARY KEY,
     Name VARCHAR(100),
-    PhoneNumber VARCHAR(15),
-    Email VARCHAR(255) UNIQUE
+    Email VARCHAR(255) UNIQUE,
+    Password CHAR(60) NOT NULL,
+    JoinDate DATE NOT NULL,
+    Gender VARCHAR(50),
+    PhoneNumber VARCHAR(15) UNIQUE
 );
+
 
 -- Creating table for Schedule with corrected references and full integration
 CREATE TABLE Schedule (
@@ -47,12 +51,12 @@ CREATE TABLE Schedule (
     SessionType VARCHAR(50),
     StartTime TIMESTAMP,
     EndTime TIMESTAMP,
-    Status VARCHAR(50),
+    Price DECIMAL(10, 2), 
     FOREIGN KEY (TrainerID) REFERENCES Trainers(TrainerID),
     FOREIGN KEY (MemberID) REFERENCES Members(MemberID),
-    FOREIGN KEY (RoomID) REFERENCES Rooms(RoomID),
-    FOREIGN KEY (BookingID) REFERENCES Room_Bookings(BookingID)
+    FOREIGN KEY (RoomID) REFERENCES Rooms(RoomID)
 );
+
 -- Table for Admin Staff
 CREATE TABLE Staff (
     StaffID INT PRIMARY KEY,
