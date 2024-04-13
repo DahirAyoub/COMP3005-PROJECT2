@@ -1,4 +1,5 @@
 from psycopg2 import DatabaseError
+from werkzeug.security import generate_password_hash, check_password_hash
 
 def view_all_booked_rooms(conn):
     try:
@@ -37,7 +38,7 @@ def delete_booked_room(conn,booking_id):
         if cur:
             cur.close()
 
-def create_room_booking(conn, room_id, staff_id, start_time, end_time, class_type):
+def create_room_booking(conn, room_id, trainer_id, start_time, end_time, class_type):
     try:
         cur = conn.cursor()
         # Check for booking conflicts before inserting
@@ -53,7 +54,7 @@ def create_room_booking(conn, room_id, staff_id, start_time, end_time, class_typ
         cur.execute("""
             INSERT INTO Room_Bookings (RoomID, StaffID, BookingStartTime, BookingEndTime, ClassType)
             VALUES (%s, %s, %s, %s, %s);
-            """, (room_id, staff_id, start_time, end_time, class_type))
+            """, (room_id, trainer_id, start_time, end_time, class_type))
         conn.commit()
         print("Room booked successfully.")
     except Exception as e:
@@ -97,31 +98,6 @@ def view_bookings_by_date(conn, date):
     finally:
         cur.close()
 
-def bookSession(conn):
-    member_id = input("Enter member ID: ")
-    trainer_id = input("Enter trainer ID: ")
-    session_type = input("Enter session type (Personal or Group): ")
-    start_time = input("Enter start time (YYYY-MM-DD HH:MM): ")
-    end_time = input("Enter end time (YYYY-MM-DD HH:MM): ")
-    class_type = input("Enter class type (if applicable, otherwise leave blank): ")
-    room_id = input("Enter room ID (if applicable, otherwise leave blank): ")
-    _bookSession(conn, member_id, trainer_id, session_type, start_time, end_time, class_type, room_id)
-
-def _bookSession(conn, member_id, trainer_id, session_type, start_time, end_time, class_type, room_id):
-    try:
-        cur = conn.cursor()
-        # Inserting the new session into the Schedule table
-        cur.execute("""
-            INSERT INTO Schedule (TrainerID, SessionType, StartTime, EndTime, MemberID, RoomID, Status, ClassType)
-            VALUES (%s, %s, %s, %s, %s, %s, 'Booked', %s);
-            """, (trainer_id, session_type, start_time, end_time, member_id or None, room_id or None, class_type))
-        conn.commit()
-        print("Session booked successfully.")
-    except DatabaseError as e:
-        print(f"Failed to book session: {e}")
-        conn.rollback()
-    finally:
-        cur.close()
 
 def rescheduleSession(conn):
     session_id = input("Enter session ID to reschedule: ")
@@ -170,48 +146,6 @@ def _cancelSession(conn, session_id):
         conn.rollback()
     finally:
         cur.close()
-
-def setTrainerAvailability(conn):
-    trainer_id = input("Enter trainer ID to set availability: ")
-    print("Enter availability timeslots (one per line, format 'YYYY-MM-DD HH:MM to YYYY-MM-DD HH:MM'), type 'done' when finished:")
-    availability_slots = []
-    while True:
-        line = input()
-        if line.lower() == 'done':
-            break
-        availability_slots.append(line.split(" to "))
-    _setTrainerAvailability(conn, trainer_id, availability_slots)
-
-def _setTrainerAvailability(conn, trainer_id, availability_slots):
-    try:
-        cur = conn.cursor()
-        cur.execute("DELETE FROM TrainerAvailability WHERE TrainerID = %s;", (trainer_id,))
-        for slot in availability_slots:
-            cur.execute("""
-                INSERT INTO TrainerAvailability (TrainerID, StartTime, EndTime)
-                VALUES (%s, %s, %s);
-                """, (trainer_id, slot[0], slot[1]))
-        conn.commit()
-        print("Trainer availability set successfully.")
-    except DatabaseError as e:
-        print(f"Failed to set trainer availability: {e}")
-
-
-def trainer_operations(conn, trainer_id, choice):
-    if choice == '1':
-        member_id = int(input("Enter the member ID to view profile: "))
-        view_member_profile_by_trainer(conn, member_id)
-    elif choice == '2':
-        new_email = input("Enter your new email: ")
-        update_trainer_email(conn, trainer_id, new_email)
-    elif choice == '3':
-        create_room_booking(conn, trainer_id)
-    elif choice == '4':
-        view_my_booked_rooms(conn, trainer_id)
-    elif choice == '5':
-        view_available_rooms(conn)
-    else:
-        print("Invalid choice. Please enter a number from 1 to 7.")
 
 
 def authenticate_trainer(conn):
@@ -329,4 +263,3 @@ def is_room_available(conn, room_id, start_time, end_time):
         if cur:
             cur.close()
 
-        
