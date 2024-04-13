@@ -57,3 +57,31 @@ INSERT INTO Trainers (Name, PhoneNumber, Email) VALUES
 INSERT INTO Schedule (TrainerID, SessionType, StartTime, EndTime, MemberID, RoomID, Status, ClassType) VALUES
 ((SELECT TrainerID FROM Trainers WHERE Name = 'John Doe'), 'Personal', '2024-05-01 10:00', '2024-05-01 11:00', 1, 1, 'Booked', 'Yoga'),
 ((SELECT TrainerID FROM Trainers WHERE Name = 'Jane Smith'), 'Group', '2024-05-02 15:00', '2024-05-02 16:00', 2, 2, 'Booked', 'Weightlifting');
+
+
+-- Inserting Staff Members
+INSERT INTO Staff (StaffID, Name, PhoneNumber, Email, Password, JoinDate, IsOwner)
+VALUES 
+(1, 'Elena Torres', '555-1010-2020', 'elena.torres@example.com', 'hashed_password1', '2023-04-01', TRUE),
+(2, 'Michael Brown', '555-2020-3030', 'michael.brown@example.com', 'hashed_password2', '2023-04-01', FALSE),
+(3, 'Sofia Clarke', '555-3030-4040', 'sofia.clarke@example.com', 'hashed_password3', '2023-04-01', FALSE),
+(4, 'Liam Nguyen', '555-4040-5050', 'liam.nguyen@example.com', 'hashed_password4', '2023-04-01', FALSE),
+(5, 'Olivia Kim', '555-5050-6060', 'olivia.kim@example.com', 'hashed_password5', '2023-04-01', FALSE);
+
+-- Inserting Rooms
+INSERT INTO Room (RoomID, RoomName, Capacity, Type, Status)
+VALUES
+(101, 'Aerobics Room', 25, 'Fitness', 'Available'),
+(102, 'Pilates Studio', 15, 'Fitness', 'Available'),
+(103, 'Cardio Room', 20, 'Cardio', 'Maintenance'),
+(104, 'Strength Training Room', 30, 'Weightlifting', 'Available'),
+(105, 'Multipurpose Room', 40, 'General', 'Occupied');
+
+-- Inserting Equipment
+INSERT INTO Equipment (EquipmentID, EquipmentName, Status, LastMaintenanceDate, WarrantyDate)
+VALUES
+(201, 'Elliptical Machine', 'Healthy', '2023-03-15', '2025-03-15'),
+(202, 'Leg Press Machine', 'Healthy', '2023-02-01', '2024-12-31'),
+(203, 'Smith Machine', 'Maintenance', '2023-01-01', '2025-01-01'),
+(204, 'Kettlebells', 'Healthy', '2023-04-10', '2028-04-10'),
+(205, 'Free Weights', 'Maintenance', '2023-02-20', '2027-02-20');
