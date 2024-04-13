@@ -46,14 +46,20 @@ INSERT INTO HealthMetrics (MemberID, MetricType, MetricValue, DateRecorded) VALU
 (10, 'Height', '176cm', '2024-04-19');
 
 
--- Insert sample trainers with expanded information
-INSERT INTO Trainers (Name, PhoneNumber, Email) VALUES
-('John Doe', '123-456-7890', 'johndoe@example.com'),
-('Jane Smith', '987-654-3210', 'janesmith@example.com');
+-- Insert sample rooms
+INSERT INTO Room (RoomID, RoomName, Capacity, Type, Status) VALUES
+(1, 'Yoga Studio', 20, 'Yoga', 'Available'),
+(2, 'Weight Room', 15, 'Gym', 'Available'),
+(3, 'Spin Room', 10, 'Cycling', 'Maintenance');
 
--- Assume you have a Rooms table and its entries are already defined as previously outlined
+-- Assume trainers and schedules exist; insert bookings
+INSERT INTO Room_Bookings (BookingID, RoomID, TrainerID, BookingStartTime, BookingEndTime, ClassType) VALUES
+(1, 1, 1, '2024-04-15 09:00', '2024-04-15 10:00', 'Yoga'),
+(2, 2, 2, '2024-04-16 15:00', '2024-04-16 16:00', 'Weight Training');
 
--- Insert sample sessions now linking to MemberID and RoomID
-INSERT INTO Schedule (TrainerID, SessionType, StartTime, EndTime, MemberID, RoomID, Status, ClassType) VALUES
-((SELECT TrainerID FROM Trainers WHERE Name = 'John Doe'), 'Personal', '2024-05-01 10:00', '2024-05-01 11:00', 1, 1, 'Booked', 'Yoga'),
-((SELECT TrainerID FROM Trainers WHERE Name = 'Jane Smith'), 'Group', '2024-05-02 15:00', '2024-05-02 16:00', 2, 2, 'Booked', 'Weightlifting');
+INSERT INTO Trainers (Name, PhoneNumber, Email, Password, JoinDate, Gender) VALUES
+('Alex Mercer', '555-0101', 'alex.mercer@example.com', 'pass2345', '2024-04-01', 'Male'),
+('Sarah Connor', '555-0202', 'sarah.connor@example.com', 'pass3456', '2024-04-02', 'Female'),
+('John Rambo', '555-0303', 'john.rambo@example.com', 'pass4567', '2024-04-03', 'Male'),
+('Ellen Ripley', '555-0404', 'ellen.ripley@example.com', 'pass5678', '2024-04-04', 'Female'),
+('Bruce Wayne', '555-0505', 'bruce.wayne@example.com', 'pass6789', '2024-04-05', 'Male');

@@ -43,15 +43,11 @@ def authenticate_user(conn):
         if user:
             stored_password = user[1]
             # Check if the stored password is hashed (by checking if it follows a typical hash pattern)
-            if stored_password.startswith('pbkdf2:sha256:') or stored_password.startswith('$2b$'):
-                if check_password_hash(stored_password, password):
-                    return user[0]  # Password match for hashed password
+            if check_password_hash(stored_password, password):
+                return user[0]
             else:
-                # Assume plaintext comparison
-                if stored_password == password:
-                    return user[0]  # Password match for plaintext password
-        print("Invalid email or password. Please try again.")
-        return None
+                print("Invalid email or password. Please try again.")
+                return None
     except DatabaseError as e:
         print(f"An error occurred during login: {e}")
         return None
@@ -374,104 +370,6 @@ def delete_fitness_goal(conn, goal_id):
     finally:
         cur.close()
 
-def bookSession(conn):
-    member_id = input("Enter member ID: ")
-    trainer_id = input("Enter trainer ID: ")
-    session_type = input("Enter session type (Personal or Group): ")
-    start_time = input("Enter start time (YYYY-MM-DD HH:MM): ")
-    end_time = input("Enter end time (YYYY-MM-DD HH:MM): ")
-    class_type = input("Enter class type (if applicable, otherwise leave blank): ")
-    room_id = input("Enter room ID (if applicable, otherwise leave blank): ")
-    _bookSession(conn, member_id, trainer_id, session_type, start_time, end_time, class_type, room_id)
-
-def _bookSession(conn, member_id, trainer_id, session_type, start_time, end_time, class_type, room_id):
-    try:
-        cur = conn.cursor()
-        # Inserting the new session into the Schedule table
-        cur.execute("""
-            INSERT INTO Schedule (TrainerID, SessionType, StartTime, EndTime, MemberID, RoomID, Status, ClassType)
-            VALUES (%s, %s, %s, %s, %s, %s, 'Booked', %s);
-            """, (trainer_id, session_type, start_time, end_time, member_id or None, room_id or None, class_type))
-        conn.commit()
-        print("Session booked successfully.")
-    except DatabaseError as e:
-        print(f"Failed to book session: {e}")
-        conn.rollback()
-    finally:
-        cur.close()
-
-def rescheduleSession(conn):
-    session_id = input("Enter session ID to reschedule: ")
-    new_start_time = input("Enter new start time (YYYY-MM-DD HH:MM): ")
-    new_end_time = input("Enter new end time (YYYY-MM-DD HH:MM): ")
-    _rescheduleSession(conn, session_id, new_start_time, new_end_time)
-
-def _rescheduleSession(conn, session_id, new_start_time, new_end_time):
-    try:
-        cur = conn.cursor()
-        cur.execute("""
-            UPDATE Schedule
-            SET StartTime = %s, EndTime = %s
-            WHERE SessionID = %s;
-            """, (new_start_time, new_end_time, session_id))
-        conn.commit()
-        if cur.rowcount:
-            print("Session rescheduled successfully.")
-        else:
-            print("No session found with that ID.")
-    except DatabaseError as e:
-        print(f"Failed to reschedule session: {e}")
-        conn.rollback()
-    finally:
-        cur.close()
-
-def cancelSession(conn):
-    session_id = input("Enter session ID to cancel: ")
-    _cancelSession(conn, session_id)
-
-def _cancelSession(conn, session_id):
-    try:
-        cur = conn.cursor()
-        cur.execute("""
-            UPDATE Schedule
-            SET Status = 'Cancelled'
-            WHERE SessionID = %s;
-            """, (session_id,))
-        conn.commit()
-        if cur.rowcount:
-            print("Session cancelled successfully.")
-        else:
-            print("No session found with that ID.")
-    except DatabaseError as e:
-        print(f"Failed to cancel session: {e}")
-        conn.rollback()
-    finally:
-        cur.close()
-
-def setTrainerAvailability(conn):
-    trainer_id = input("Enter trainer ID to set availability: ")
-    print("Enter availability timeslots (one per line, format 'YYYY-MM-DD HH:MM to YYYY-MM-DD HH:MM'), type 'done' when finished:")
-    availability_slots = []
-    while True:
-        line = input()
-        if line.lower() == 'done':
-            break
-        availability_slots.append(line.split(" to "))
-    _setTrainerAvailability(conn, trainer_id, availability_slots)
-
-def _setTrainerAvailability(conn, trainer_id, availability_slots):
-    try:
-        cur = conn.cursor()
-        cur.execute("DELETE FROM TrainerAvailability WHERE TrainerID = %s;", (trainer_id,))
-        for slot in availability_slots:
-            cur.execute("""
-                INSERT INTO TrainerAvailability (TrainerID, StartTime, EndTime)
-                VALUES (%s, %s, %s);
-                """, (trainer_id, slot[0], slot[1]))
-        conn.commit()
-        print("Trainer availability set successfully.")
-    except DatabaseError as e:
-        print(f"Failed to set trainer availability: {e}")
 
 #Schedule Managment Goes here
 
@@ -719,85 +617,278 @@ def monitor_fitness_equipment_maintenance(conn):
     finally:
         cur.close()
 
+def member_operations(conn, member_id, choice):
+    if choice == '1':
+        view_user_profile(conn, member_id)
+    elif choice == '2':
+        new_email = input("Enter new email: ")
+        update_user_profile(conn, member_id, new_email)
+    elif choice == '3':
+        add_health_metric(conn, member_id)
+    elif choice == '4':
+        view_health_metrics(conn, member_id)
+    elif choice == '5':
+        update_health_metric(conn, member_id)
+    elif choice == '6':
+        delete_health_metric(conn, member_id)
+    elif choice == '7':
+        add_fitness_goal(conn, member_id)
+    elif choice == '8':
+        view_fitness_goals(conn, member_id)
+    elif choice == '9':
+        goal_id = int(input("Enter Fitness Goal ID to update: "))
+        update_fitness_goal(conn, goal_id)
+    elif choice == '10':
+        goal_id = int(input("Enter Fitness Goal ID to delete: "))
+        delete_fitness_goal(conn, goal_id)
+    else:
+        print("Invalid choice. Please enter a number from 1 to 14.")
+
+def trainer_operations(conn, trainer_id, choice):
+    if choice == '1':
+        member_id = int(input("Enter the member ID to view profile: "))
+        view_member_profile_by_trainer(conn, member_id)
+    elif choice == '2':
+        new_email = input("Enter your new email: ")
+        update_trainer_email(conn, trainer_id, new_email)
+    elif choice == '3':
+        book_room_for_session(conn, trainer_id)
+    elif choice == '4':
+        view_my_booked_rooms(conn, trainer_id)
+    elif choice == '5':
+        session_id = int(input("Enter the session ID to reschedule: "))
+        reschedule_trainer_session(conn, session_id)
+    elif choice == '6':
+        session_id = int(input("Enter the session ID to cancel: "))
+        cancel_trainer_session(conn, session_id)
+    elif choice == '7':
+        view_available_rooms(conn)
+    else:
+        print("Invalid choice. Please enter a number from 1 to 7.")
+
+
+def authenticate_trainer(conn):
+    email = input("Enter your trainer email: ")
+    password = input("Enter your password: ")
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT TrainerID, Password FROM Trainers WHERE Email = %s;", (email,))
+        trainer = cur.fetchone()
+        if trainer:
+            stored_password = trainer[1]
+            if check_password_hash(stored_password, password):
+                return trainer[0]  # Return the TrainerID if the password is correct
+            else:
+                print("Invalid email or password. Please try again.")
+                return None
+        else:
+            print("No trainer found with that email. Please try again.")
+            return None
+    except DatabaseError as e:
+        print(f"An error occurred during trainer login: {e}")
+        return None
+    finally:
+        if cur:
+            cur.close()
+
+def update_trainer_email(conn, trainer_id, new_email):
+    try:
+        cur = conn.cursor()
+        cur.execute("UPDATE Trainers SET Email = %s WHERE TrainerID = %s;", (new_email, trainer_id))
+        conn.commit()
+        if cur.rowcount:
+            print("Email updated successfully.")
+        else:
+            print("Trainer not found.")
+    except DatabaseError as e:
+        print(f"An error occurred: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+
+def book_room_for_session(conn, trainer_id):
+    room_id = input("Enter Room ID: ")
+    start_time = input("Enter Start Time (YYYY-MM-DD HH:MM): ")
+    end_time = input("Enter End Time (YYYY-MM-DD HH:MM): ")
+    class_type = input("Enter Class Type: ")
+    try:
+        cur = conn.cursor()
+        # Check for booking conflicts before inserting
+        cur.execute("""
+            SELECT 1 FROM Room_Bookings WHERE RoomID = %s AND NOT (
+                %s >= BookingEndTime OR %s <= BookingStartTime)
+            """, (room_id, end_time, start_time))
+        if cur.fetchone():
+            print("This booking overlaps with another. Please choose a different time.")
+            return
+        
+        cur.execute("""
+            INSERT INTO Room_Bookings (RoomID, TrainerID, BookingStartTime, BookingEndTime, ClassType)
+            VALUES (%s, %s, %s, %s, %s);
+            """, (room_id, trainer_id, start_time, end_time, class_type))
+        conn.commit()
+        print("Room booked successfully.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+
+def view_my_booked_rooms(conn, trainer_id):
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT BookingID, RoomID, BookingStartTime, BookingEndTime, ClassType
+            FROM Room_Bookings
+            WHERE TrainerID = %s;
+            """, (trainer_id,))
+        bookings = cur.fetchall()
+        if bookings:
+            print("Your Booked Rooms:")
+            for booking in bookings:
+                print(f"BookingID: {booking[0]}, RoomID: {booking[1]}, Start: {booking[2]}, End: {booking[3]}, Class Type: {booking[4]}")
+        else:
+            print("No rooms currently booked.")
+    except DatabaseError as e:
+        print(f"An error occurred: {e}")
+    finally:
+        cur.close()
+
+def reschedule_trainer_session(conn, session_id):
+    new_start_time = input("Enter new Start Time (YYYY-MM-DD HH:MM): ")
+    new_end_time = input("Enter new End Time (YYYY-MM-DD HH:MM): ")
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE Room_Bookings
+            SET BookingStartTime = %s, BookingEndTime = %s
+            WHERE BookingID = %s;
+            """, (new_start_time, new_end_time, session_id))
+        conn.commit()
+        if cur.rowcount:
+            print("Session rescheduled successfully.")
+        else:
+            print("Failed to reschedule session. No session found.")
+    except DatabaseError as e:
+        print(f"An error occurred: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+
+def cancel_trainer_session(conn, session_id):
+    try:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM Room_Bookings WHERE BookingID = %s;", (session_id,))
+        conn.commit()
+        if cur.rowcount:
+            print("Session cancelled successfully.")
+        else:
+            print("Failed to cancel session. No session found.")
+    except DatabaseError as e:
+        print(f"An error occurred: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+
+def view_available_rooms(conn):
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT RoomID, RoomName, Capacity, Type, Status
+            FROM Room
+            WHERE Status = 'Available';
+            """)
+        rooms = cur.fetchall()
+        if rooms:
+            print("Available Rooms:")
+            for room in rooms:
+                print(f"RoomID: {room[0]}, Name: {room[1]}, Capacity: {room[2]}, Type: {room[3]}, Status: {room[4]}")
+        else:
+            print("No available rooms currently.")
+    except DatabaseError as e:
+        print(f"An error occurred: {e}")
+    finally:
+        cur.close()
+
+def view_member_profile_by_trainer(conn, member_id):
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT Name, Email, JoinDate, Gender
+            FROM Members
+            WHERE MemberID = %s;
+            """, (member_id,))
+        member_info = cur.fetchone()
+        if member_info:
+            print(f"Member Profile - Name: {member_info[0]}, Email: {member_info[1]}, Join Date: {member_info[2]}, Gender: {member_info[3]}")
+        else:
+            print("No member found with the provided ID.")
+    except DatabaseError as e:
+        print(f"An error occurred: {e}")
+    finally:
+        cur.close()
 
 if __name__ == "__main__":
     conn = get_db_connection()
     if conn:
-        while True:
-            print("\nWelcome to the Health and Fitness Club Management System")
-            print("1: Register as a new user")
-            print("2: Login")
-            print("0: Exit")
-            user_choice = input("Choose an option to proceed: ")
+        user_type = input("Welcome to the Health and Fitness Club Management System. Are you a (1) Member or a (2) Trainer? Enter 1 or 2: ")
+        if user_type == '1':
+            # Member session
+            member_id = authenticate_user(conn)
+            if member_id:
+                print(f"Login successful! Welcome, Member ID: {member_id}")
+                while True:
+                    print("\nChoose operation:")
+                    print("1: View Your Profile")
+                    print("2: Update Your Email")
+                    print("3: Add Health Metric")
+                    print("4: View Your Health Metrics")
+                    print("5: Update Health Metric")
+                    print("6: Delete Health Metric")
+                    print("7: Add Fitness Goal")
+                    print("8: View Your Fitness Goals")
+                    print("9: Update Fitness Goal")
+                    print("10: Delete Fitness Goal")
+                    print("11: Book a Session")
+                    print("12: Reschedule a Session")
+                    print("13: Cancel a Session")
+                    print("14: Set Trainer Availability")
+                    print("0: Logout")
+                    choice = input("Enter your choice: ")
 
-            if user_choice == '1':
-                register_user(conn)
-            elif user_choice == '2':
-                member_id = authenticate_user(conn)
-                if member_id:
-                    print(f"Login successful! Welcome, Member ID: {member_id}")
-                    while True:
-                        print("\nChoose operation:")
-                        print("1: View Your Profile")
-                        print("2: Update Your Email")
-                        print("3: Add Health Metric")
-                        print("4: View Your Health Metrics")
-                        print("5: Update Health Metric")
-                        print("6: Delete Health Metric")
-                        print("7: Add Fitness Goal")
-                        print("8: View Your Fitness Goals")
-                        print("9: Update Fitness Goal")
-                        print("10: Delete Fitness Goal")
-                        print("11: Book a Session")
-                        print("12: Reschedule a Session")
-                        print("13: Cancel a Session")
-                        print("14: Set Trainer Availability")
-                        print("0: Logout")
-                        choice = input("Enter your choice: ")
-
-                        if choice == '1':
-                            view_user_profile(conn, member_id)
-                        elif choice == '2':
-                            new_email = input("Enter new email: ")
-                            update_user_profile(conn, member_id, new_email)
-                        elif choice == '3':
-                            add_health_metric(conn, member_id)
-                        elif choice == '4':
-                            view_health_metrics(conn, member_id)
-                        elif choice == '5':
-                            update_health_metric(conn, member_id)
-                        elif choice == '6':
-                            delete_health_metric(conn, member_id)
-                        elif choice == '7':
-                            add_fitness_goal(conn, member_id)
-                        elif choice == '8':
-                            view_fitness_goals(conn, member_id)
-                        elif choice == '9':
-                            goal_id = int(input("Enter Fitness Goal ID to update: "))
-                            update_fitness_goal(conn, goal_id)
-                        elif choice == '10':
-                            goal_id = int(input("Enter Fitness Goal ID to delete: "))
-                            delete_fitness_goal(conn, goal_id)
-                        elif choice == '11':
-                            bookSession(conn)
-                        elif choice == '12':
-                            rescheduleSession(conn)
-                        elif choice == '13':
-                            cancelSession(conn)
-                        elif choice == '14':
-                            setTrainerAvailability(conn)
-                        elif choice == '0':
-                            print("Logging out...")
-                            break
-                        else:
-                            print("Invalid choice. Please enter a number from 0 to 14.")
-                else:
-                    print("Login failed. Invalid email or password. Please try again.")
-            elif user_choice == '0':
-                print("Exiting the program.")
-                break
+                    if choice == '0':
+                        print("Logging out...")
+                        break
+                    else:
+                        member_operations(conn, member_id, choice)
             else:
-                print("Invalid choice. Please try again.")
+                print("Login failed. Invalid email or password.")
+        elif user_type == '2':
+            # Trainer session
+            trainer_id = authenticate_trainer(conn)
+            if trainer_id:
+                print(f"Login successful! Welcome, Trainer ID: {trainer_id}")
+                while True:
+                    print("\nTrainer Operations:")
+                    print("1: View Member Profile")
+                    print("2: Update My Email")
+                    print("3: Book a Room")
+                    print("4: View Booked Rooms")
+                    print("5: Reschedule a Session")
+                    print("6: Cancel a Session")
+                    print("7: View All Available Rooms")
+                    print("0: Logout")
+                    choice = input("Enter your choice: ")
+
+                    if choice == '0':
+                        print("Logging out...")
+                        break
+                    else:
+                        trainer_operations(conn, trainer_id, choice)
+            else:
+                print("Trainer login failed. Please try again.")
+        else:
+            print("Invalid choice. Exiting program.")
         conn.close()
     else:
         print("Failed to connect to the database.")
