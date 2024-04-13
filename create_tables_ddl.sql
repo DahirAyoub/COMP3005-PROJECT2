@@ -60,6 +60,7 @@ CREATE TABLE Staff (
     Email VARCHAR(255) UNIQUE,
     Password VARCHAR(60) NOT NULL,
     JoinDate DATE NOT NULL
+    IsOwner BOOLEAN DEFAULT FALSE;
 );
 
 
