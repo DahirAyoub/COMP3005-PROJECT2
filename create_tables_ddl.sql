@@ -51,4 +51,41 @@ CREATE TABLE Schedule (
     FOREIGN KEY (TrainerID) REFERENCES Trainers(TrainerID),
     FOREIGN KEY (MemberID) REFERENCES Members(MemberID),
     FOREIGN KEY (RoomID) REFERENCES Rooms(RoomID)
+
+-- Table for Admin Staff
+CREATE TABLE Staff (
+    StaffID INT PRIMARY KEY,
+    Name VARCHAR(255),
+    PhoneNumber VARCHAR(15) UNIQUE,
+    Email VARCHAR(255) UNIQUE,
+    Password VARCHAR(60) NOT NULL,
+    JoinDate DATE NOT NULL
+);
+
+
+CREATE TABLE Room (
+    RoomID INT PRIMARY KEY,
+    RoomName VARCHAR(255),
+    Capacity INT,
+    Type VARCHAR(100),
+    Status VARCHAR(100)
+);
+
+CREATE TABLE Room_Bookings (
+    BookingID INT PRIMARY KEY,
+    RoomID INT,
+    TrainerID INT,
+    BookingStartTime TIMESTAMP,
+    BookingEndTime TIMESTAMP,
+    ClassType VARCHAR(100),
+    FOREIGN KEY (RoomID) REFERENCES Room (RoomID),
+    FOREIGN KEY (StaffID) REFERENCES Admin_Staff (StaffID)
+);
+
+CREATE TABLE Equipment (
+    EquipmentID INT PRIMARY KEY,
+    EquipmentName VARCHAR(255),
+    Status VARCHAR(100),
+    LastMaintenanceDate DATE,
+    WarrantyDate DATE
 );
