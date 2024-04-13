@@ -1,5 +1,5 @@
 import psycopg2
-from psycopg2 import DatabaseError, connect
+from psycopg2 import DatabaseError
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # Function to register a new user in the system
