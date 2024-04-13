@@ -246,3 +246,102 @@ def monitor_fitness_equipment_maintenance(conn):
         print(f"An error occurred: {e}")
     finally:
         cur.close()
+
+
+def view_all_fitness_equipment(conn):
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT EquipmentID, EquipmentName, Status, LastMaintenanceDate, WarrantyDate FROM Equipment;")
+        equipments = cur.fetchall()
+        if equipments:
+            print("\nList of All Fitness Equipment:")
+            for eq in equipments:
+                print(f"EquipmentID: {eq[0]}, Name: {eq[1]}, Status: {eq[2]}, Last Maintenance: {eq[3]}, Warranty Until: {eq[4]}")
+        else:
+            print("No fitness equipment found.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        cur.close()
+
+
+def check_if_owner(conn, staff_id):
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT IsOwner FROM Staff WHERE StaffID = %s;", (staff_id,))
+        result = cur.fetchone()
+        if result:
+            return result[0]  # Returns True if IsOwner is True, otherwise False
+        return False
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return False
+    finally:
+        cur.close()
+
+def delete_admin_staff(conn, staff_id):
+    try:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM Staff WHERE StaffID = %s;", (staff_id,))
+        conn.commit()
+        if cur.rowcount:
+            print("Admin staff deleted successfully.")
+        else:
+            print("No admin staff found with that ID.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+
+def update_admin_staff_details(conn, staff_id):
+    new_name = input("Enter new name: ")
+    new_phone_number = input("Enter new phone number: ")
+    new_email = input("Enter new email: ")
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE Staff
+            SET Name = %s, PhoneNumber = %s, Email = %s
+            WHERE StaffID = %s;
+            """, (new_name, new_phone_number, new_email, staff_id))
+        conn.commit()
+        if cur.rowcount:
+            print("Admin staff details updated successfully.")
+        else:
+            print("No admin staff found with that ID.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+
+def view_admin_staff_details(conn, staff_id):
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT StaffID, Name, PhoneNumber, Email FROM Staff WHERE StaffID = %s;", (staff_id,))
+        staff_details = cur.fetchone()
+        if staff_details:
+            print(f"Staff ID: {staff_details[0]}, Name: {staff_details[1]}, Phone Number: {staff_details[2]}, Email: {staff_details[3]}")
+        else:
+            print("No admin staff found with that ID.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        cur.close()
+
+def view_all_staff(conn):
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT StaffID, Name, PhoneNumber, Email FROM Staff ORDER BY StaffID;")
+        staff_list = cur.fetchall()
+        if staff_list:
+            print("\nList of All Admin Staff:")
+            for staff in staff_list:
+                print(f"Staff ID: {staff[0]}, Name: {staff[1]}, Phone Number: {staff[2]}, Email: {staff[3]}")
+        else:
+            print("No admin staff found.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        cur.close()
