@@ -44,3 +44,16 @@ INSERT INTO HealthMetrics (MemberID, MetricType, MetricValue, DateRecorded) VALU
 (9, 'Height', '174cm', '2024-04-18'),
 (10, 'Weight', '85kg', '2024-04-19'),
 (10, 'Height', '176cm', '2024-04-19');
+
+
+-- Insert sample trainers with expanded information
+INSERT INTO Trainers (Name, PhoneNumber, Email) VALUES
+('John Doe', '123-456-7890', 'johndoe@example.com'),
+('Jane Smith', '987-654-3210', 'janesmith@example.com');
+
+-- Assume you have a Rooms table and its entries are already defined as previously outlined
+
+-- Insert sample sessions now linking to MemberID and RoomID
+INSERT INTO Schedule (TrainerID, SessionType, StartTime, EndTime, MemberID, RoomID, Status, ClassType) VALUES
+((SELECT TrainerID FROM Trainers WHERE Name = 'John Doe'), 'Personal', '2024-05-01 10:00', '2024-05-01 11:00', 1, 1, 'Booked', 'Yoga'),
+((SELECT TrainerID FROM Trainers WHERE Name = 'Jane Smith'), 'Group', '2024-05-02 15:00', '2024-05-02 16:00', 2, 2, 'Booked', 'Weightlifting');
