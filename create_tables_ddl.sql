@@ -41,17 +41,18 @@ CREATE TABLE Trainers (
 CREATE TABLE Schedule (
     SessionID SERIAL PRIMARY KEY,
     TrainerID INT,
-    MemberID INT,
+    MemberID INT [],
     RoomID INT,
+    BookingID INT,
     SessionType VARCHAR(50),
     StartTime TIMESTAMP,
     EndTime TIMESTAMP,
     Status VARCHAR(50),
-    ClassType VARCHAR(100),
     FOREIGN KEY (TrainerID) REFERENCES Trainers(TrainerID),
     FOREIGN KEY (MemberID) REFERENCES Members(MemberID),
-    FOREIGN KEY (RoomID) REFERENCES Rooms(RoomID)
-
+    FOREIGN KEY (RoomID) REFERENCES Rooms(RoomID),
+    FOREIGN KEY (BookingID) REFERENCES Room_Bookings(BookingID)
+);
 -- Table for Admin Staff
 CREATE TABLE Staff (
     StaffID INT PRIMARY KEY,
