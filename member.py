@@ -327,16 +327,13 @@ def delete_fitness_goal(conn, goal_id):
     finally:
         cur.close()
 
-
 def book_session(conn, member_id, trainer_id, session_type, start_time, end_time):
     try:
         cur = conn.cursor()
         # First, list all available rooms that do not have overlapping bookings
         cur.execute("""
-            SELECT r.RoomID, r.RoomName FROM Room r
-            WHERE NOT EXISTS (
-                SELECT 1 FROM Schedule s
-                WHERE s.RoomID = r.RoomID AND NOT (%s >= s.EndTime OR %s <= s.StartTime)
+            SELECT RoomID, RoomName FROM Room WHERE NOT EXISTS (
+                SELECT 1 FROM Schedule WHERE RoomID = RoomID AND NOT (%s >= EndTime OR %s <= StartTime)
             );
             """, (end_time, start_time))
         
@@ -349,10 +346,10 @@ def book_session(conn, member_id, trainer_id, session_type, start_time, end_time
         for room in available_rooms:
             print(f"RoomID: {room[0]}, Name: {room[1]}")
 
-        # Let the user choose a room from the list
+        # Let the user choose a room
         room_id = int(input("Enter Room ID to book: "))
 
-        # Check if the room is still available (to handle potential concurrency issues)
+        # Check if the room is still available
         cur.execute("""
             SELECT 1 FROM Schedule WHERE RoomID = %s AND NOT (%s >= EndTime OR %s <= StartTime);
             """, (room_id, end_time, start_time))
@@ -360,14 +357,21 @@ def book_session(conn, member_id, trainer_id, session_type, start_time, end_time
             print("This room is no longer available. Please choose a different room.")
             return
 
-        # Set price based on the session type
+        # Set price based on session type
         price = 75 if session_type.lower() == 'personal' else 25
 
         # Insert new session
         cur.execute("""
-            INSERT INTO Schedule (TrainerID, MemberID, RoomID, SessionType, StartTime, EndTime, Price)
-            VALUES (%s, %s, %s, %s, %s, %s, %s);
-            """, (trainer_id, member_id, room_id, session_type, start_time, end_time, price))
+            INSERT INTO Schedule (TrainerID, RoomID, SessionType, StartTime, EndTime, Price)
+            VALUES (%s, %s, %s, %s, %s, %s) RETURNING SessionID;
+            """, (trainer_id, room_id, session_type, start_time, end_time, price))
+        session_id = cur.fetchone()[0]
+
+        # Insert member into ScheduleMembers
+        cur.execute("""
+            INSERT INTO ScheduleMembers (MemberID, SessionID)
+            VALUES (%s, %s);
+            """, (member_id, session_id))
         conn.commit()
         print("Session booked successfully.")
     except DatabaseError as e:
@@ -376,20 +380,20 @@ def book_session(conn, member_id, trainer_id, session_type, start_time, end_time
     finally:
         cur.close()
 
-
 def view_member_sessions(conn, member_id):
     try:
         cur = conn.cursor()
         cur.execute("""
-            SELECT SessionID, SessionType, StartTime, EndTime, Status
-            FROM Schedule
-            WHERE MemberID = %s;
+            SELECT s.SessionID, s.SessionType, s.StartTime, s.EndTime
+            FROM Schedule s
+            JOIN ScheduleMembers sm ON s.SessionID = sm.SessionID
+            WHERE sm.MemberID = %s;
             """, (member_id,))
         sessions = cur.fetchall()
         if sessions:
             print("Your sessions:")
             for session in sessions:
-                print(f"SessionID: {session[0]}, Type: {session[1]}, Start: {session[2]}, End: {session[3]}, Status: {session[4]}")
+                print(f"SessionID: {session[0]}, Type: {session[1]}, Start: {session[2]}, End: {session[3]}")
         else:
             print("You have no booked sessions.")
     except DatabaseError as e:
@@ -401,8 +405,13 @@ def view_member_sessions(conn, member_id):
 def cancel_session(conn, session_id):
     try:
         cur = conn.cursor()
+        # Remove members from the session
         cur.execute("""
-            UPDATE Schedule SET Status = 'Cancelled' WHERE SessionID = %s;
+            DELETE FROM ScheduleMembers WHERE SessionID = %s;
+            """, (session_id,))
+        # Now cancel the session itself
+        cur.execute("""
+            DELETE FROM Schedule WHERE SessionID = %s;
             """, (session_id,))
         conn.commit()
         if cur.rowcount:
