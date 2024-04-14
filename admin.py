@@ -247,3 +247,72 @@ def view_all_staff(conn):
         print(f"An error occurred: {e}")
     finally:
         cur.close()
+
+
+def view_all_rooms(conn):
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT RoomID, RoomName, Capacity, Type, Status FROM Room ORDER BY RoomID;")
+        rooms_list = cur.fetchall()
+        if rooms_list:
+            print("\nList of All Rooms:")
+            for room in rooms_list:
+                print(f"Room ID: {room[0]}, Name: {room[1]}, Capacity: {room[2]}, Type: {room[3]}, Status: {room[4]}")
+        else:
+            print("No rooms found.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        cur.close()
+
+
+def add_room(conn):
+    room_name = input("Enter the room name: ")
+    capacity = input("Enter the room capacity: ")
+    room_type = input("Enter the room type: ")
+    status = input("Enter the room status: ")
+    try:
+        cur = conn.cursor()
+        cur.execute("INSERT INTO Room (RoomName, Capacity, Type, Status) VALUES (%s, %s, %s, %s);",
+                    (room_name, capacity, room_type, status))
+        conn.commit()
+        print("Room added successfully.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+
+
+def delete_room(conn):
+    room_id = input("Enter the room ID to delete: ")
+    try:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM Room WHERE RoomID = %s;", (room_id,))
+        conn.commit()
+        if cur.rowcount:
+            print("Room deleted successfully.")
+        else:
+            print("No room found with that ID.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+
+def edit_room_status(conn):
+    room_id = input("Enter the room ID to update the status: ")
+    new_status = input("Enter the new status for the room: ")
+    try:
+        cur = conn.cursor()
+        cur.execute("UPDATE Room SET Status = %s WHERE RoomID = %s;", (new_status, room_id))
+        conn.commit()
+        if cur.rowcount:
+            print("Room status updated successfully.")
+        else:
+            print("No room found with that ID or no changes made.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
