@@ -59,26 +59,26 @@ CREATE TABLE Schedule (
 
 -- Table for Admin Staff
 CREATE TABLE Staff (
-    StaffID INT PRIMARY KEY,
+    StaffID SERIAL INT PRIMARY KEY,
     Name VARCHAR(255),
     PhoneNumber VARCHAR(15) UNIQUE,
-    Email VARCHAR(255) UNIQUE,
-    Password VARCHAR(60) NOT NULL,
+    Email VARCHAR(255) NOT NULL UNIQUE,
+    Password VARCHAR(255) NOT NULL,
     JoinDate DATE NOT NULL
     IsOwner BOOLEAN DEFAULT FALSE;
 );
 
 
 CREATE TABLE Room (
-    RoomID INT PRIMARY KEY,
+    RoomID SERIAL INT PRIMARY KEY,
     RoomName VARCHAR(255),
     Capacity INT,
-    Type VARCHAR(100),
-    Status VARCHAR(100)
+    Type VARCHAR(255),
+    Status VARCHAR(255)
 );
 
 CREATE TABLE Room_Bookings (
-    BookingID INT PRIMARY KEY,
+    BookingID SERIAL INT PRIMARY KEY,
     RoomID INT,
     TrainerID INT,
     BookingStartTime TIMESTAMP,
@@ -89,7 +89,7 @@ CREATE TABLE Room_Bookings (
 );
 
 CREATE TABLE Equipment (
-    EquipmentID INT PRIMARY KEY,
+    EquipmentID SERIAL INT PRIMARY KEY,
     EquipmentName VARCHAR(255),
     Status VARCHAR(100),
     LastMaintenanceDate DATE,
