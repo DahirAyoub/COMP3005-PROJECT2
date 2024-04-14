@@ -71,7 +71,7 @@ CREATE TABLE Staff (
     PhoneNumber VARCHAR(15) UNIQUE,
     Email VARCHAR(255) NOT NULL UNIQUE,
     Password VARCHAR(255) NOT NULL,
-    JoinDate DATE NOT NULL
+    JoinDate DATE NOT NULL,
     IsOwner BOOLEAN DEFAULT FALSE;
 );
 
