@@ -81,12 +81,23 @@ def member_choices(conn, member_id):
             goal_id = int(input("Enter Fitness Goal ID to delete: "))
             delete_fitness_goal(conn, goal_id)
         elif choice == '11':
-            book_session(conn, member_id)
+           
+            member_id = int(input("Enter your member ID: "))  
+            trainer_id = int(input("Enter a trainer ID: "))
+            session_type = input("Enter session type (Personal or Group): ")
+            start_time = input("Enter start time (YYYY-MM-DD HH:MM): ")
+            end_time = input("Enter end time (YYYY-MM-DD HH:MM): ")
+
+        
+            book_session(conn, member_id, trainer_id, session_type, start_time, end_time)
+
         elif choice == '12':
             view_member_sessions(conn, member_id)
         elif choice == '13':
             session_id = int(input("Enter session ID to reschedule: "))
-            reschedule_session(conn, session_id)
+            start_time = input("Enter start time (YYYY-MM-DD HH:MM): ")
+            end_time = input("Enter end time (YYYY-MM-DD HH:MM): ")
+            reschedule_session(conn, session_id,start_time,end_time)
         elif choice == '14':
             session_id = int(input("Enter session ID to cancel: "))
             cancel_session(conn, session_id)
@@ -107,8 +118,8 @@ def trainer_operations(conn, trainer_id):
         print("5 - View Available Rooms")
         print("6 - View Your Profile")
         print("7 - Update Your Profile")
-        print("8 - Reschedule a Session")
-        print("9 - Cancel a Session")
+        print("8 - Reschedule a booking")
+        print("9 - Cancel a booking")
         print("0 - Logout")
 
         choice = input("Enter your choice (0-9): ")
@@ -134,10 +145,7 @@ def trainer_operations(conn, trainer_id):
         elif choice == '7':
             update_trainer_profile(conn, trainer_id)
         elif choice == '8':
-            session_id = int(input("Enter session ID to reschedule: "))
-            new_start_time = input("Enter new start time (YYYY-MM-DD HH:MM): ")
-            new_end_time = input("Enter new end time (YYYY-MM-DD HH:MM): ")
-            rescheduleSession(conn, trainer_id, session_id, new_start_time, new_end_time)
+            rescheduleBooking(conn)
         elif choice == '9':
             session_id = int(input("Enter session ID to cancel: "))
             cancelSession(conn, session_id)

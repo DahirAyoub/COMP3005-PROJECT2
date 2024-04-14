@@ -1,15 +1,54 @@
+-- Creating table for Members
 CREATE TABLE Members (
     MemberID SERIAL PRIMARY KEY,
     Name VARCHAR(255) NOT NULL,
     Email VARCHAR(255) NOT NULL UNIQUE,
-    Password CHAR(60) NOT NULL,
+    Password VARCHAR(255) NOT NULL,
     JoinDate DATE NOT NULL,
-    Gender VARCHAR(50)
+    Gender VARCHAR(255)
 );
 
-ALTER TABLE Members
-ALTER COLUMN Password TYPE VARCHAR(255);
+-- Creating table for Trainers
+CREATE TABLE Trainers (
+    TrainerID SERIAL PRIMARY KEY,
+    Name VARCHAR(100),
+    Email VARCHAR(255) UNIQUE,
+    Password VARCHAR(255) NOT NULL,
+    JoinDate DATE NOT NULL,
+    Gender VARCHAR(255),
+    PhoneNumber VARCHAR(100) UNIQUE
+);
 
+-- Creating table for Room
+CREATE TABLE Room (
+    RoomID SERIAL PRIMARY KEY,
+    RoomName VARCHAR(255),
+    Capacity INT,
+    Type VARCHAR(255),
+    Status VARCHAR(255)
+);
+
+-- Creating table for Equipment
+CREATE TABLE Equipment (
+    EquipmentID SERIAL PRIMARY KEY,
+    EquipmentName VARCHAR(255),
+    Status VARCHAR(100),
+    LastMaintenanceDate DATE,
+    WarrantyDate DATE
+);
+
+-- Creating table for Staff
+CREATE TABLE Staff (
+    StaffID SERIAL PRIMARY KEY,
+    Name VARCHAR(255),
+    PhoneNumber VARCHAR(15) UNIQUE,
+    Email VARCHAR(255) NOT NULL UNIQUE,
+    Password VARCHAR(255) NOT NULL,
+    JoinDate DATE NOT NULL,
+    IsOwner BOOLEAN DEFAULT FALSE
+);
+
+-- Creating table for FitnessGoals
 CREATE TABLE FitnessGoals (
     GoalID SERIAL PRIMARY KEY,
     MemberID INT NOT NULL,
@@ -20,6 +59,7 @@ CREATE TABLE FitnessGoals (
     FOREIGN KEY (MemberID) REFERENCES Members(MemberID)
 );
 
+-- Creating table for HealthMetrics
 CREATE TABLE HealthMetrics (
     MetricID SERIAL PRIMARY KEY,
     MemberID INT NOT NULL,
@@ -29,19 +69,7 @@ CREATE TABLE HealthMetrics (
     FOREIGN KEY (MemberID) REFERENCES Members(MemberID)
 );
 
--- Creating table for Trainers with corrected schema
-CREATE TABLE Trainers (
-    TrainerID SERIAL PRIMARY KEY,
-    Name VARCHAR(100),
-    Email VARCHAR(255) UNIQUE,
-    Password CHAR(60) NOT NULL,
-    JoinDate DATE NOT NULL,
-    Gender VARCHAR(50),
-    PhoneNumber VARCHAR(15) UNIQUE
-);
-
-
--- Creating table for Schedule with corrected references and full integration
+-- Creating table for Schedule
 CREATE TABLE Schedule (
     SessionID SERIAL PRIMARY KEY,
     TrainerID INT,
@@ -64,41 +92,14 @@ CREATE TABLE ScheduleMembers (
     PRIMARY KEY (MemberID, SessionID)
 );
 
--- Table for Admin Staff
-CREATE TABLE Staff (
-    StaffID SERIAL INT PRIMARY KEY,
-    Name VARCHAR(255),
-    PhoneNumber VARCHAR(15) UNIQUE,
-    Email VARCHAR(255) NOT NULL UNIQUE,
-    Password VARCHAR(255) NOT NULL,
-    JoinDate DATE NOT NULL,
-    IsOwner BOOLEAN DEFAULT FALSE;
-);
-
-
-CREATE TABLE Room (
-    RoomID SERIAL INT PRIMARY KEY,
-    RoomName VARCHAR(255),
-    Capacity INT,
-    Type VARCHAR(255),
-    Status VARCHAR(255)
-);
-
+-- Creating table for Room_Bookings
 CREATE TABLE Room_Bookings (
-    BookingID SERIAL INT PRIMARY KEY,
+    BookingID SERIAL PRIMARY KEY,
     RoomID INT,
-    TrainerID INT,
+    TrainerID INT,  
     BookingStartTime TIMESTAMP,
     BookingEndTime TIMESTAMP,
     ClassType VARCHAR(100),
-    FOREIGN KEY (RoomID) REFERENCES Room (RoomID),
-    FOREIGN KEY (StaffID) REFERENCES Admin_Staff (StaffID)
-);
-
-CREATE TABLE Equipment (
-    EquipmentID SERIAL INT PRIMARY KEY,
-    EquipmentName VARCHAR(255),
-    Status VARCHAR(100),
-    LastMaintenanceDate DATE,
-    WarrantyDate DATE
+    FOREIGN KEY (RoomID) REFERENCES Room(RoomID),
+    FOREIGN KEY (TrainerID) REFERENCES Trainers(TrainerID)
 );
