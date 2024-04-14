@@ -105,11 +105,13 @@ def trainer_operations(conn, trainer_id):
         print("3 - Book a Room")
         print("4 - View Your Booked Rooms")
         print("5 - View Available Rooms")
-        print("6 - Reschedule a Session")
-        print("7 - Cancel a Session")
+        print("6 - View Your Profile")
+        print("7 - Update Your Profile")
+        print("8 - Reschedule a Session")
+        print("9 - Cancel a Session")
         print("0 - Logout")
 
-        choice = input("Enter your choice (0-7): ")
+        choice = input("Enter your choice (0-9): ")
 
         if choice == '1':
             member_id = int(input("Enter the member ID to view profile: "))
@@ -128,19 +130,22 @@ def trainer_operations(conn, trainer_id):
         elif choice == '5':
             view_available_rooms(conn)
         elif choice == '6':
+            view_trainer_profile(conn, trainer_id)
+        elif choice == '7':
+            update_trainer_profile(conn, trainer_id)
+        elif choice == '8':
             session_id = int(input("Enter session ID to reschedule: "))
             new_start_time = input("Enter new start time (YYYY-MM-DD HH:MM): ")
             new_end_time = input("Enter new end time (YYYY-MM-DD HH:MM): ")
             rescheduleSession(conn, trainer_id, session_id, new_start_time, new_end_time)
-        elif choice == '7':
+        elif choice == '9':
             session_id = int(input("Enter session ID to cancel: "))
             cancelSession(conn, session_id)
         elif choice == '0':
             print("Logging out...")
             break
         else:
-            print("Invalid choice. Please enter a number from 0 to 7.")
-
+            print("Invalid choice. Please enter a number from 0 to 9.")
 def admin_choices(conn, admin_id):
     is_owner = check_if_owner(conn, admin_id)
     
