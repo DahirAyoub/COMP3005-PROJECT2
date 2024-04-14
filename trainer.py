@@ -131,14 +131,19 @@ def cancelSession(conn):
 def _cancelSession(conn, session_id):
     try:
         cur = conn.cursor()
+        # First delete the associated entries in ScheduleMembers
         cur.execute("""
-            UPDATE Schedule
-            SET Status = 'Cancelled'
+            DELETE FROM ScheduleMembers
+            WHERE SessionID = %s;
+            """, (session_id,))
+        # Then delete the session
+        cur.execute("""
+            DELETE FROM Schedule
             WHERE SessionID = %s;
             """, (session_id,))
         conn.commit()
         if cur.rowcount:
-            print("Session cancelled successfully.")
+            print("Session cancelled and all associated enrollments removed successfully.")
         else:
             print("No session found with that ID.")
     except DatabaseError as e:
@@ -146,6 +151,7 @@ def _cancelSession(conn, session_id):
         conn.rollback()
     finally:
         cur.close()
+
 
 
 def authenticate_trainer(conn):

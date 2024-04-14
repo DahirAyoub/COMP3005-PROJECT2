@@ -44,7 +44,7 @@ INSERT INTO HealthMetrics (MemberID, MetricType, MetricValue, DateRecorded) VALU
 (9, 'Height', '174cm', '2024-04-18'),
 (10, 'Weight', '85kg', '2024-04-19'),
 (10, 'Height', '176cm', '2024-04-19');
-
+1
 
 -- Insert sample trainers with expanded information
 INSERT INTO Trainers (Name, PhoneNumber, Email) VALUES

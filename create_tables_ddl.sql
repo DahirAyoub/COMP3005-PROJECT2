@@ -45,16 +45,23 @@ CREATE TABLE Trainers (
 CREATE TABLE Schedule (
     SessionID SERIAL PRIMARY KEY,
     TrainerID INT,
-    MemberID INT [],
     RoomID INT,
     BookingID INT,
-    SessionType VARCHAR(50),
+    SessionType VARCHAR(50) CHECK (SessionType IN ('Personal', 'Group')),
     StartTime TIMESTAMP,
     EndTime TIMESTAMP,
-    Price DECIMAL(10, 2), 
+    Price DECIMAL(10, 2),
     FOREIGN KEY (TrainerID) REFERENCES Trainers(TrainerID),
+    FOREIGN KEY (RoomID) REFERENCES Room(RoomID)
+);
+
+-- Associative table for Members and Schedules
+CREATE TABLE ScheduleMembers (
+    MemberID INT,
+    SessionID INT,
     FOREIGN KEY (MemberID) REFERENCES Members(MemberID),
-    FOREIGN KEY (RoomID) REFERENCES Rooms(RoomID)
+    FOREIGN KEY (SessionID) REFERENCES Schedule(SessionID),
+    PRIMARY KEY (MemberID, SessionID)
 );
 
 -- Table for Admin Staff
