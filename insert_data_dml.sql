@@ -44,7 +44,7 @@ INSERT INTO HealthMetrics (MemberID, MetricType, MetricValue, DateRecorded) VALU
 (9, 'Height', '174cm', '2024-04-18'),
 (10, 'Weight', '85kg', '2024-04-19'),
 (10, 'Height', '176cm', '2024-04-19');
-1
+
 
 -- Insert sample trainers with expanded information
 INSERT INTO Trainers (Name, PhoneNumber, Email) VALUES
@@ -60,28 +60,27 @@ INSERT INTO Schedule (TrainerID, SessionType, StartTime, EndTime, MemberID, Room
 
 
 -- Inserting Staff Members
-INSERT INTO Staff (StaffID, Name, PhoneNumber, Email, Password, JoinDate, IsOwner)
+INSERT INTO Staff ( Name, PhoneNumber, Email, Password, JoinDate, IsOwner)
 VALUES 
-(1, 'Elena Torres', '555-1010-2020', 'elena.torres@example.com', 'hashed_password1', '2023-04-01', TRUE),
-(2, 'Michael Brown', '555-2020-3030', 'michael.brown@example.com', 'hashed_password2', '2023-04-01', FALSE),
-(3, 'Sofia Clarke', '555-3030-4040', 'sofia.clarke@example.com', 'hashed_password3', '2023-04-01', FALSE),
-(4, 'Liam Nguyen', '555-4040-5050', 'liam.nguyen@example.com', 'hashed_password4', '2023-04-01', FALSE),
-(5, 'Olivia Kim', '555-5050-6060', 'olivia.kim@example.com', 'hashed_password5', '2023-04-01', FALSE);
-
+('Elena Torres', '555-1010-2020', 'elena.torres@example.com', 'hashed_password1', '2023-04-01', TRUE),
+('Michael Brown', '555-2020-3030', 'michael.brown@example.com', 'hashed_password2', '2023-04-01', FALSE),
+('Sofia Clarke', '555-3030-4040', 'sofia.clarke@example.com', 'hashed_password3', '2023-04-01', FALSE),
+('Liam Nguyen', '555-4040-5050', 'liam.nguyen@example.com', 'hashed_password4', '2023-04-01', FALSE),
+('Olivia Kim', '555-5050-6060', 'olivia.kim@example.com', 'hashed_password5', '2023-04-01', FALSE);
 -- Inserting Rooms
-INSERT INTO Room (RoomID, RoomName, Capacity, Type, Status)
+INSERT INTO Room ( RoomName, Capacity, Type, Status)
 VALUES
-(101, 'Aerobics Room', 25, 'Fitness', 'Available'),
-(102, 'Pilates Studio', 15, 'Fitness', 'Available'),
-(103, 'Cardio Room', 20, 'Cardio', 'Maintenance'),
-(104, 'Strength Training Room', 30, 'Weightlifting', 'Available'),
-(105, 'Multipurpose Room', 40, 'General', 'Occupied');
+('Aerobics Room', 25, 'Fitness', 'Available'),
+('Pilates Studio', 15, 'Fitness', 'Available'),
+('Cardio Room', 20, 'Cardio', 'Maintenance'),
+('Strength Training Room', 30, 'Weightlifting', 'Available'),
+('Multipurpose Room', 40, 'General', 'Occupied');
 
 -- Inserting Equipment
-INSERT INTO Equipment (EquipmentID, EquipmentName, Status, LastMaintenanceDate, WarrantyDate)
+INSERT INTO Equipment ( EquipmentName, Status, LastMaintenanceDate, WarrantyDate)
 VALUES
-(201, 'Elliptical Machine', 'Healthy', '2023-03-15', '2025-03-15'),
-(202, 'Leg Press Machine', 'Healthy', '2023-02-01', '2024-12-31'),
-(203, 'Smith Machine', 'Maintenance', '2023-01-01', '2025-01-01'),
-(204, 'Kettlebells', 'Healthy', '2023-04-10', '2028-04-10'),
-(205, 'Free Weights', 'Maintenance', '2023-02-20', '2027-02-20');
+('Elliptical Machine', 'Healthy', '2023-03-15', '2025-03-15'),
+('Leg Press Machine', 'Healthy', '2023-02-01', '2024-12-31'),
+('Smith Machine', 'Maintenance', '2023-01-01', '2025-01-01'),
+('Kettlebells', 'Healthy', '2023-04-10', '2028-04-10'),
+('Free Weights', 'Maintenance', '2023-02-20', '2027-02-20');

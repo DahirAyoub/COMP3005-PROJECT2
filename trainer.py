@@ -53,7 +53,7 @@ def create_room_booking(conn, room_id, trainer_id, start_time, end_time, class_t
         
         # Insert the new booking
         cur.execute("""
-            INSERT INTO Room_Bookings (RoomID, StaffID, BookingStartTime, BookingEndTime, ClassType)
+            INSERT INTO Room_Bookings (RoomID, TrainerID, BookingStartTime, BookingEndTime, ClassType)
             VALUES (%s, %s, %s, %s, %s);
             """, (room_id, trainer_id, start_time, end_time, class_type))
         conn.commit()
@@ -99,6 +99,67 @@ def view_bookings_by_date(conn, date):
     finally:
         cur.close()
 
+
+
+def rescheduleBooking(conn):
+    booking_id = input("Enter booking ID to reschedule: ")
+    new_start_time = input("Enter new start time (YYYY-MM-DD HH:MM): ")
+    new_end_time = input("Enter new end time (YYYY-MM-DD HH:MM): ")
+    _rescheduleBooking(conn, booking_id, new_start_time, new_end_time)
+
+def _rescheduleBooking(conn, booking_id, new_start_time, new_end_time):
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE room_bookings
+            SET BookingStartTime = %s, BookingEndTime = %s
+            WHERE bookingID = %s;
+            """, (new_start_time, new_end_time, booking_id))
+        conn.commit()
+        if cur.rowcount:
+            print("Room Booking rescheduled successfully.")
+        else:
+            print("No booking found with that ID.")
+    except DatabaseError as e:
+        print(f"Failed to reschedule booking: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+        
+def cancelBooking(conn):
+    booking_id = input("Enter bookingID to cancel: ")
+    _cancelBooking(conn, booking_id)
+
+def _cancelBooking(conn, booking_id):
+    try:
+        cur = conn.cursor()
+        # First delete the associated entries in room_bookings
+        cur.execute("""
+            DELETE FROM room_bookings
+            WHERE bookingID = %s;
+            """, (booking_id))
+        # Then delete the session from schedule
+        cur.execute("""
+            DELETE FROM schedule
+            WHERE SessionID = %s;
+            """, (booking_id))
+        
+        #Then delete from schedulemembers
+        cur.execute("""
+            DELETE FROM schedulemembers
+            WHERE SessionID = %s;
+            """, (booking_id))
+        
+        conn.commit()
+        if cur.rowcount:
+            print("Session cancelled and all associated enrollments removed successfully.")
+        else:
+            print("No session found with that ID.")
+    except DatabaseError as e:
+        print(f"Failed to cancel session: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
 
 def rescheduleSession(conn):
     session_id = input("Enter session ID to reschedule: ")
